@@ -48,6 +48,7 @@ setup(
                                 'UNLICENSE', 'INSTALL', 'CHANGELOG']),
                 ('share/doc/pdoc', ['doc/pdoc/index.html']),
                ],
+    entry_points = {'pdoc.output': ['demo = pdoc.demo_plugins:output_demo']},
     scripts=['scripts/pdoc'],
     provides=['pdoc'],
     requires=['argparse', 'mako', 'markdown'],

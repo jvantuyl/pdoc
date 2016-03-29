@@ -81,6 +81,9 @@ aa('--http-port', type=int, default=8080,
    help='The port on which to run the HTTP server.')
 aa('--http-html', action='store_true',
    help='Internal use only. Do not set.')
+aa('--output-plugin', type=str, default='',
+   help='use a plugin to render output')
+# global variable that will hold the parsed args
 args = None
 
 class WebDoc (BaseHTTPRequestHandler):
@@ -507,7 +510,27 @@ def output_html(module):
     sys.exit(0)
 
 
+def output_plugin(args, module):
+    try:
+        import pkg_resources
+    except ImportError:
+        _eprint('setuptools/distribute required to use plugins')
+        sys.exit(1)
+    target_plugin_name = args.output_plugin.lower()
+    plugin_map = pkg_resources.get_entry_map('pdoc', group='pdoc.output')
+    for plugin_name, endpoint in plugin_map.items():
+        plugin = endpoint.load()
+        if plugin_name == target_plugin_name:
+            plugin(args, module)
+            sys.exit(0)
+    else:
+        _eprint('unable to find plugin for %r' % plugin_name)
+        sys.exit(1)
+
+
 def output_files(module):
+    if args.output_plugin:
+        output_plugin(args, module)
     # Plain text?
     if not args.html and not args.all_submodules:
         output_text(module)
